@@ -101,6 +101,9 @@ class PlatformController extends Controller {
         $pars = array();
         $pars[':type'] = Account::ACCOUNT_WEIXIN;
         $accounts = $a->table('__PLATFORMS__')->where($condition)->bind($pars)->select();
+        foreach($accounts as &$acc) {
+            $acc['level'] = $a->table('__PLATFORM_WEIXIN__')->where("`id`='{$acc['id']}'")->getField('level');
+        }
         $this->assign('accounts', $accounts);
         $this->display('weixin');
     }

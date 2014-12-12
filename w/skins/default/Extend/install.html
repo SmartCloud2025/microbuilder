@@ -21,16 +21,16 @@
                                 </a>
                                 <div class="media-body">
                                     <div class="row">
-                                        <div class="col-sm-10">
+                                        <div class="col-sm-9">
                                             <h4 class="media-heading"><a href="javascript:;">{$row['title']}</a></h4>
                                             <div class="help-block">{$row['description']}</div>
                                             <div class="help-block"> <span class="label label-success">{$types[$row['type']]['title']}</span></div>
                                             <div class="help-block">开发商: {$row['author']}</div>
                                         </div>
-                                        <div class="col-sm-2">
+                                        <div class="col-sm-3">
                                             <div class="btn-group btn-group-sm btn-group-justified">
-                                                <a class="btn btn-primary" href="{:U('control/extend/install?addon=' . $row['name'])}">安装扩展</a>
-                                                <a class="btn btn-default" href="{$row['url']}" target="_blank">去发布页</a>
+                                                <a class="btn btn-primary" href="{:U('control/extend/install?addon=' . $row['name'])}">安装</a>
+                                                <a class="btn btn-default" href="{$row['url']}" target="_blank">发布页</a>
                                             </div>
                                         </div>
                                     </div>

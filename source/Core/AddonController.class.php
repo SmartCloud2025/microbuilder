@@ -14,8 +14,8 @@ class AddonController extends Controller {
     protected $addon;
     
     function __construct($params, $addon) {
-        parent::__construct();
         $this->params = $params;
+        parent::__construct();
         $this->addon = $addon;
         $this->assign('__addon', $this->addon->getCurrentAddon());
         $this->assign('__controller', $this);
@@ -25,6 +25,10 @@ class AddonController extends Controller {
     public function U($url='', $vars='') {
         $entry = strtolower(MODULE_NAME);
         return $this->addon->U($entry, $url, $vars);
+    }
+    
+    protected function getParams() {
+        return $this->params;
     }
 
     protected function display($templateFile = '', $charset = '', $contentType = '', $content = '', $prefix = '') {

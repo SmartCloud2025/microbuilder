@@ -90,9 +90,11 @@
                 <div class="col-xs-12">
                     <div class="media text-warning">
                         <div class="media">
-                            <a class="pull-left" href="#">
-                                <img src="{:attach($fan['info']['avatar'])}" alt="微信头像" class="img-rounded" style="width:64px;height:64px;">
-                            </a>
+                            <notempty name="$fan['info']['avatar']">
+                                <a class="pull-left" href="#">
+                                    <img src="{:attach($fan['info']['avatar'])}" alt="微信头像" class="img-rounded" style="width:64px;height:64px;">
+                                </a>
+                            </notempty>
                             <div class="media-body">
                                 <h4 class="media-heading">{$fan['info']['nickname']}</h4>
                                 你好. 这是你首次从微信进入系统, 因此需要完善个人资料
@@ -156,7 +158,7 @@
                             <label class="control-label sr-only"></label>
                             <div class="input-group">
                                 <span class="input-group-addon"><i class="fa fa-fw fa-lock text-success"></i></span>
-                                <input ng-model="login.password" type="text" class="form-control" placeholder="请输入登录密码" required="required">
+                                <input ng-model="login.password" type="password" class="form-control" placeholder="请输入登录密码" required="required">
                             </div>
                             <span class="glyphicon glyphicon-remove form-control-feedback" ng-show="errorLogin.password"></span>
                         </div>

@@ -8,7 +8,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{:U('bench/welcome/index')}" style="width:auto;"><span>MicroBuilder System's Control Panel</span></a>
+            <a class="navbar-brand" href="{:U('bench/welcome/index')}" style="width:auto;"><span>Control Panel</span></a>
 
             <ul class="collapse navbar-collapse nav navbar-nav">
                 <li{:C('FRAME_ACTIVE') == 'common' ? ' class="active"' : ''}><a href="{:U('control/welcome/common')}"><i class="fa fa-fw fa-cog"></i> 通用选项</a></li>
@@ -28,7 +28,7 @@
                     <?php $__user = C('SESSION.USER');$__role = C('SESSION.ROLE');?>
                     <a href="javascript:;" data-toggle="dropdown"><i class="fa fa-user"></i> {$__user['USERNAME']}<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
-                        <li><a href="{:U('/bench/account/profile')}" target="_blank"><i class="fa fa-fw fa-user"></i> 个人资料</a></li>
+                        <li><a href="{:U('/bench/user/profile')}" target="_blank"><i class="fa fa-fw fa-user"></i> 个人资料</a></li>
                         <li><a href="{:U('/bench')}"><i class="fa fa-fw fa-reply"></i> 返回运营工作台</a></li>
                         <li class="divider"></li>
                         <li><a href="{:U('/wander/account/logout')}"><i class="fa fa-fw fa-sign-out"></i> 退出系统</a></li>
@@ -41,7 +41,7 @@
 <div class="container-fluid">
     <div class="row">
         <if condition="IN_MESSAGE !== true">
-            <div class="col-sm-2 col-lg-2">
+            <div class="col-sm-3 col-lg-2">
                 <div class="sidebar-nav">
                     <div class="nav-canvas">
                         <volist name=":C('FRAME_SETS')" key="__name" id="__row">

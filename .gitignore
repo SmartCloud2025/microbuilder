@@ -1,6 +1,9 @@
 /\.idea
 
 /addons/CouponCommerce/
+/addons/Logistics/
+/addons/SalesTask/
+/addons/Store/
 
 /source/Data/
 /source/Conf/config.inc.php

@@ -6,9 +6,9 @@ $tags = array();
 $tags['app_init'][] = 'Common\Behavior\AppInitBehavior';
 
 if(defined('IN_APP') && IN_APP === true) {
+    $tags['view_begin'][]       = 'App\Behavior\AuthBehavior';
 } else {
     $tags['view_begin'][]       = 'Common\Behavior\WebTemplateBehavior';
-    
     $tags['action_begin'][]     = 'Common\Behavior\WebAuthBehavior';
 }
 

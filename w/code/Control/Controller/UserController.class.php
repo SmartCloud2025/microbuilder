@@ -42,15 +42,9 @@ class UserController extends Controller {
     public function createAction() {
         if(IS_POST) {
             $input = $this->validateForm();
-            $user = $this->acl->getUser($input['username'], true);
-            if(!empty($user)) {
-                $this->error('用户名已经存在, 请返回修改');
-            }
-            $input['salt'] = util_random(8);
-            $input['password'] = Utility::encodePassword($input['password'], $input['salt']);
-            $ret = $this->acl->table('__USR_USERS__')->data($input)->add();
-            if(empty($ret)) {
-                $this->error('保存新增用户失败, 请稍后重试');
+            $ret = $this->acl->createUser($input);
+            if(is_error($ret)) {
+                $this->error($ret['message']);
             } else {
                 $this->success('成功新增管理用户');
                 exit;
@@ -68,11 +62,9 @@ class UserController extends Controller {
         }
         if(IS_POST) {
             $input = $this->validateForm(true);
-            $input = coll_elements(array('password', 'role', 'status'), $input);
-            $input['password'] = Utility::encodePassword($input['password'], $user['salt']);
-            $ret = $this->acl->table('__USR_USERS__')->data($input)->where("`uid`={$uid}")->save();
-            if(empty($ret)) {
-                $this->error('保存用户信息失败, 请稍后重试');
+            $ret = $this->acl->modifyUser($uid, $input);
+            if(is_error($ret)) {
+                $this->error($ret['message']);
             } else {
                 $this->success('保存成功');
                 exit;
@@ -84,18 +76,12 @@ class UserController extends Controller {
 
     public function deleteAction($uid) {
         $uid = intval($uid);
-        if($uid == '1') {
-            $this->error('创建用户不能删除');
-        }
-        $user = $this->acl->getUser($uid, true);
-        if(empty($user)) {
-            $this->error('访问错误');
-        }
-        $ret = $this->acl->table('__USR_USERS__')->where("`uid`={$uid}")->delete();
-        if(empty($ret)) {
-            $this->error('删除用户信息失败, 请稍后重试');
+        $ret = $this->acl->deleteUser($uid);
+        if(is_error($ret)) {
+            $this->error($ret['message']);
         } else {
             $this->success('删除成功');
+            exit;
         }
     }
 

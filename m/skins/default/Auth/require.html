@@ -20,7 +20,7 @@
                 var params = angular.copy($scope.input);
                 $http.post(location.href, params).success(function(content){
                     if(content == 'success') {
-                        location.href = "{:base64_decode($forward)}";
+                        location.href = "{$forward}";
                     } else if (u.is_error(content)) {
                         u.message(content.message);
                     } else {
@@ -32,7 +32,7 @@
         angular.bootstrap(document, ['app']);
     });
 </script>
-<div class="container-fluid ng-cloak" ng-controller="joinPanel">
+<div class="container-fluid container-dock ng-cloak" ng-controller="joinPanel">
     <div class="page-header">
         <h2>完善个人资料</h2>
     </div>
@@ -54,18 +54,20 @@
                     <if condition="in_array($row['name'], array('state', 'city', 'district'))">
                         <if condition="!defined('REQUIRE_DIS')">
                             <script>
-                                require(['district'], function(m){
-                                    var elms = {
-                                        province: $('select[ng-model="input.state"]')[0],
-                                        city: $('select[ng-model="input.city"]')[0],
-                                        district: $('select[ng-model="input.district"]')[0]
-                                    };
-                                    var vals = {
-                                        province: "{$profiles['state']}",
-                                        city: "{$profiles['city']}",
-                                        district: "{$profiles['district']}"
-                                    };
-                                    m.render(elms, vals);
+                                require(['jquery', 'district'], function(m){
+                                    $(function(){
+                                        var elms = {
+                                            province: $('select[ng-model="input.state"]')[0],
+                                            city: $('select[ng-model="input.city"]')[0],
+                                            district: $('select[ng-model="input.district"]')[0]
+                                        };
+                                        var vals = {
+                                            province: "{$profiles['state']}",
+                                            city: "{$profiles['city']}",
+                                            district: "{$profiles['district']}"
+                                        };
+                                        m.render(elms, vals);
+                                    });
                                 });
                             </script>
                         </if>
@@ -106,4 +108,9 @@
         </div>
     </div>
 </div>
+<ul class="nav nav-bardown nav-justified" style="z-index:10;">
+    <li>
+        <a href="javascript:;" onclick="history.go(-1);" class="pull-left" style="height:100%;padding:1em 2em"><i class="fa fa-reply text-danger"></i></a>
+    </li>
+</ul>
 <include file="Common/footer" />

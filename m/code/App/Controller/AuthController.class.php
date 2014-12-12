@@ -5,6 +5,7 @@ use Core\Model\Member;
 use Core\Platform\Platform;
 use Core\Util\Net;
 use Think\Controller;
+use Think\Log;
 
 class AuthController extends Controller {
     
@@ -17,6 +18,7 @@ class AuthController extends Controller {
         if(IS_POST) {
             $post = inputRaw();
             if($m->update($member['uid'], $post)) {
+                session('require:forward', null);
                 exit('success');
             }
             exit('error');
@@ -27,15 +29,24 @@ class AuthController extends Controller {
             $this->error('非法访问');
         }
         session('__:require', null);
-        $forward = I('get.f');
+        $forward = session('require:forward');
         if(empty($forward)) {
             $forward = U('/');
-        }
-        if(!$force) {
-            redirect($forward);
+        } else {
+            $forward = $forward;
         }
         
         $profiles = $m->profile($member['uid'], $require['fields']);
+        $isEmpty = false;
+        foreach($profiles as $p) {
+            if(empty($p)) {
+                $isEmpty = true;
+                break;
+            }
+        }
+        if(!$force && !$isEmpty) {
+            redirect($forward);
+        }
         $fields = Member::fields();
         $ds = array();
         foreach($require['fields'] as $field) {
@@ -46,7 +57,6 @@ class AuthController extends Controller {
             $row['value'] = $profiles[$field];
             $ds[] = $row;
         }
-        
         $this->assign('profiles', $profiles);
         $this->assign('ds', $ds);
         $this->assign('message', $require['message']);
@@ -143,23 +153,26 @@ class AuthController extends Controller {
                         if(!empty($fan['uid'])) {
                             //登陆
                             $m = new Member();
-                            $m->login($fan['uid']);
+                            $member = $m->profile($uid);
+                            if(!empty($member)) {
+                                $m->login($fan['uid']);
+                                redirect($forward);
+                            }
+                        }
+                        
+                        if($setting[Member::OPT_POLICY] == Member::OPT_POLICY_CLASSICAL) {
+                            //兼容模式, 创建新用户
+                            $this->error('兼容模式暂未支持');
                             redirect($forward);
                         } else {
-                            if($setting[Member::OPT_POLICY] == Member::OPT_POLICY_CLASSICAL) {
-                                //兼容模式, 创建新用户
-                                $this->error('兼容模式暂未支持');
-                                redirect($forward);
-                            } else {
-                                //统一模式, 注册新用户
-                                session('fan:weixin', $fan);
-                                if(!empty($fan['info'])) {
-                                    $fan['info'] = unserialize($fan['info']);
-                                }
-                                $this->assign('fan', $fan);
-                                $this->assign('forward', $forward);
-                                $this->display('weixin');
+                            //统一模式, 注册新用户
+                            session('fan:weixin', $fan);
+                            if(!empty($fan['info'])) {
+                                $fan['info'] = unserialize($fan['info']);
                             }
+                            $this->assign('fan', $fan);
+                            $this->assign('forward', $forward);
+                            $this->display('weixin');
                         }
                         return;
                     } else {

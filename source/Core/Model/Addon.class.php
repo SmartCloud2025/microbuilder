@@ -476,4 +476,14 @@ class Addon extends Model {
             return true;
         }
     }
+
+    public function pay($order) {
+        $order['addon'] = $this->addon['name'];
+        $m = new Pay();
+        $ret = $m->saveLog($order);
+        if(is_error($ret)) {
+            return $ret;
+        }
+        return U('cash/desk', array('p' => $ret)) . '?showwxpaytitle=1';
+    }
 }

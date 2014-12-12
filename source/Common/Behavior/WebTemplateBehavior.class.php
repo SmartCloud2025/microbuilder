@@ -188,7 +188,7 @@ class WebTemplateBehavior {
                     array(
                         'icon'  => 'credit-card',
                         'title' => '支付功能',
-                        'url'   => U('control/app/setting')
+                        'url'   => U('control/app/payment')
                     )
                 )
             ),

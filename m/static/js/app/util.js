@@ -61,6 +61,7 @@ define(['bootstrap'], function($){
                 $.get(content[0]).success(embed);
             }
         }
+        modalobj.modal({keyboard: false, show: false});
         return modalobj;
     };
 
@@ -191,6 +192,133 @@ define(['bootstrap'], function($){
         });
     };
 
+    var run = null;
+    window.__map_init = function() {
+        if(run) {
+            run();
+        }
+    };
+    module.map = function(val, callback) {
+        if(!val) {
+            val = {};
+        }
+        if(!val.lng) {
+            val.lng = 116.403851;
+        }
+        if(!val.lat) {
+            val.lat = 39.915177;
+        }
+        var modalobj = $('#map-dialog');
+        require(['http://map.qq.com/api/js?v=2.exp&callback=__map_init'], function() {
+            if(run) {
+                run(val, callback);
+                return;
+            }
+            run = function(v, cb) {
+                if(modalobj.length == 0) {
+                    var content =
+                        '<div class="form-group">' +
+                            '<div class="input-group">' +
+                                '<input type="text" class="form-control" placeholder="请输入地址来直接查找相关位置">' +
+                                '<div class="input-group-btn">' +
+                                    '<button class="btn btn-default"><i class="icon-search"></i> 搜索</button>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="help-block">&nbsp;</div>' +
+                        '</div>' +
+                        '<div id="map-container" style="height:20em;"></div><span class="fa fa-map-marker fa-2x" style="color:red;position:relative;"></span>';
+                    var footer =
+                        '<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>' +
+                            '<button type="button" class="btn btn-primary">确认</button>';
+                    modalobj = module.dialog('请选择地点', content, footer, {containerName : 'map-dialog'});
+                    modalobj.find('.modal-dialog').css('width', 'auto');
+                    modalobj.modal({'keyboard': false});
+                    modalobj.find('.fa').css('left', (modalobj.find('#map-container').width() - modalobj.find('.fa').width())/2);
+                    modalobj.find('.fa').css('top', 0 - modalobj.find('#map-container').height()/2 - modalobj.find('.fa').width());
+                    
+                    var searchAddress = function(ret) {
+                        if(ret.type == qq.maps.ServiceResultType.GEO_INFO) {
+                            map.panTo(ret.detail.location);
+                            modalobj.find('.help-block').text(ret.detail.address);
+                        }
+                    };
+                    var posAddress = function(ret) {
+                        if(ret.type == qq.maps.ServiceResultType.GEO_INFO) {
+                            if(ret.detail.nearPois && ret.detail.nearPois.length > 0) {
+                                modalobj.find('.help-block').text(ret.detail.nearPois[0].address + ret.detail.nearPois[0].name + '附近');
+                            } else {
+                                modalobj.find('.help-block').text(ret.detail.address);
+                            }
+                        }
+                    };
+                    var map = null;
+                    var point = new qq.maps.LatLng(val.lat, val.lng);
+                    var geo = new qq.maps.Geocoder({
+                        complete: searchAddress
+                    });
+                    var option = {
+                        zoom: 13,
+                        center: point,
+                        scrollwheel: false,
+                        disableDoubleClickZoom: false,
+                        keyboardShortcuts: false,
+                        mapTypeId: qq.maps.MapTypeId.ROADMAP,
+                        mapTypeControl: false,
+                        panControl: false,
+                        
+                        zoomControl: true,
+                        zoomControlOptions: {
+                            position: qq.maps.ControlPosition.TOP_LEFT
+                        },
+    
+                        scaleControl: true,
+                        scaleControlOptions: {
+                            position: qq.maps.ControlPosition.BOTTOM_LEFT
+                        }
+                    }
+                    module.map.instance = map = new qq.maps.Map($("#map-container")[0], option);
+                    geo.setComplete(posAddress);
+                    geo.getAddress(map.getCenter());
+                    qq.maps.event.addListener(map, 'dragend', function() {
+                        geo.setComplete(posAddress);
+                        geo.getAddress(map.getCenter());
+                    });
+                    
+                    modalobj.find('.input-group :text').keydown(function(e){
+                        if(e.keyCode == 13) {
+                            var kw = $(this).val();
+                            geo.setComplete(searchAddress);
+                            geo.getLocation(kw)
+                        }
+                    });
+                    modalobj.find('.input-group button').click(function(){
+                        var kw = $(this).parent().prev().val();
+                        geo.setComplete(searchAddress);
+                        geo.getLocation(kw)
+                    });
+                }
+
+                if(v) {
+                    val = v;
+                }
+                module.map.instance.panTo(new qq.maps.LatLng(val.lat, val.lng));
+                modalobj.find('button.btn-primary').off('click');
+                modalobj.find('button.btn-primary').on('click', function(){
+                    if(cb) {
+                        callback = cb;
+                    }
+                    if($.isFunction(callback)) {
+                        var point = module.map.instance.getCenter();
+                        var val = {lng: point.lng, lat: point.lat, label: modalobj.find('.help-block').text()};
+                        callback(val);
+                    }
+                    modalobj.modal('hide');
+                });
+                modalobj.modal('show');
+            }
+        });
+    };
+    
     return module;
 });
 

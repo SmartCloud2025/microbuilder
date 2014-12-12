@@ -1,5 +1,6 @@
 <?php
 namespace Core\Model;
+use Think\Log;
 use Think\Model;
 
 class Member extends Model {
@@ -31,14 +32,19 @@ class Member extends Model {
      */
     const OPT_AUTH_WEIXIN = 'AUTH.WEIXIN';
 
+    private static function getOptions() {
+        $keys = array();
+        $keys[] = self::OPT_POLICY;
+        $keys[] = self::OPT_CREDITS;
+        $keys[] = self::OPT_CREDITPOLICY;
+        $keys[] = self::OPT_AUTH_WEIXIN;
+        return $keys;
+    }
+    
     public static function loadSettings($flush = false) {
         $s = C('MS');
         if(empty($s) || $flush) {
-            $keys = array();
-            $keys[] = self::OPT_POLICY;
-            $keys[] = self::OPT_CREDITS;
-            $keys[] = self::OPT_CREDITPOLICY;
-            $keys[] = self::OPT_AUTH_WEIXIN;
+            $keys = self::getOptions();
             $s = Utility::loadSettings('Member', $keys);
             if(empty($s[self::OPT_POLICY])) {
                 $s[self::OPT_POLICY] = self::OPT_POLICY_UNION;
@@ -91,13 +97,9 @@ class Member extends Model {
     }
 
     public static function saveSettings($settings) {
-        $keys = array();
-        $keys[] = self::OPT_POLICY;
-        $keys[] = self::OPT_CREDITS;
-        $keys[] = self::OPT_CREDITPOLICY;
-        $keys[] = self::OPT_AUTH_WEIXIN;
+        $keys = self::getOptions();
         $settings = coll_elements($keys, $settings);
-        return Utility::saveSettings('Member', $settings);
+        return Utility::saveSettings('MS', $settings);
     }
 
     /**
@@ -404,8 +406,8 @@ class Member extends Model {
         if(empty($forward)) {
             $forward = $_SERVER['REQUEST_URI'];
         }
-        $forward = base64_encode($forward);
-        redirect(U('auth/require?force=' . ($force ? 'true' : 'false') . '&f=' . $forward));
+        session('require:forward', $forward);
+        redirect(U('auth/require?force=' . ($force ? 'true' : 'false')));
     }
     
     public function login($uid) {
@@ -431,6 +433,9 @@ class Member extends Model {
         $condition = '`isdefault`=1';
         $pars = array();
         $group = $this->table('__MMB_GROUPS__')->where($condition)->bind($pars)->find();
+        if(empty($group)) {
+            $group['id'] = 0;
+        }
         $rec['groupid'] = $group['id'];
         $rec['createtime'] = TIMESTAMP;
         $rec['joinfrom'] = $member['from'];
@@ -490,5 +495,14 @@ class Member extends Model {
         $id = intval($id);
         $ret = $this->table('__MMB_GROUPS__')->where("`id`={$id}")->delete();
         return !!$ret;
+    }
+    
+    public function fetchFan($uid, $platform) {
+        $condition = "`platformid`=:platformid AND `uid`=:uid";
+        $pars = array();
+        $pars[':platformid'] = $platform;
+        $pars[':uid'] = $uid;
+        $fan = $this->table('__MMB_MAPPING_FANS__')->where($condition)->bind($pars)->find();
+        return $fan;
     }
 }

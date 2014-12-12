@@ -30,7 +30,7 @@ class Acl extends Model {
         $pars = array();
         if(!$withDisabled) {
             $condition = '`status`=:status';
-            $pars[':status'] = self::STATUS_DISABLED;
+            $pars[':status'] = self::STATUS_ENABLED;
         }
         $roles = $this->table('__USR_ROLES__')->where($condition)->bind($pars)->select();
         if(!empty($roles)) {
@@ -57,10 +57,56 @@ class Acl extends Model {
         }
 
         if(!$withDisabled) {
-            $condition = '`status`=:status';
-            $pars[':status'] = self::STATUS_DISABLED;
+            $condition .= ' AND `status`=:status';
+            $pars[':status'] = self::STATUS_ENABLED;
         }
         $user = $this->table('__USR_USERS__')->where($condition)->bind($pars)->find();
         return $user;
+    }
+    
+    public function createUser($user) {
+        $user = coll_elements(array('username', 'password', 'role'), $user);
+        $exist = $this->getUser($user['username'], true);
+        if(!empty($exist)) {
+            return error(-1, '用户名已经存在, 请返回修改');
+        }
+        $user['salt'] = util_random(8);
+        $user['status'] = self::STATUS_ENABLED;
+        $user['password'] = Utility::encodePassword($user['password'], $user['salt']);
+
+        $ret = $this->table('__USR_USERS__')->data($user)->add();
+        if(!empty($ret)) {
+            return $this->getLastInsID();
+        }
+        return error(-2, '保存用户数据失败, 请稍后重试');
+    }
+    
+    public function modifyUser($uid, $user) {
+        $uid = intval($uid);
+        $input = coll_elements(array('password', 'role', 'status'), $user);
+        $user = $this->getUser($uid);
+        $input['password'] = Utility::encodePassword($input['password'], $user['salt']);
+        $ret = $this->table('__USR_USERS__')->data($input)->where("`uid`={$uid}")->save();
+        if($ret !== false) {
+            return true;
+        }
+        return error(-2, '保存用户数据失败, 请稍后重试');
+    }
+    
+    public function deleteUser($uid) {
+        $uid = intval($uid);
+        if($uid == '1') {
+            return error(-1, '创建用户不能删除');
+        }
+        $user = $this->getUser($uid, true);
+        if(empty($user)) {
+            return error(-2, '访问错误');
+        }
+        $ret = $this->table('__USR_USERS__')->where("`uid`={$uid}")->delete();
+        if(empty($ret)) {
+            return error(-3, '删除用户信息失败, 请稍后重试');
+        } else {
+            return true;
+        }
     }
 }

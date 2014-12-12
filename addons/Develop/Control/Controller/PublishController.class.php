@@ -16,6 +16,7 @@ class PublishController extends AddonController {
         'mmb_members',
         'mmb_profiles',
         'platform_alipay',
+        'platform_weixin',
         'platforms',
         'rp_processors',
         'rp_replies',

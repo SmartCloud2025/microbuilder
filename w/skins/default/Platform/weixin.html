@@ -18,26 +18,46 @@
                             <th style="min-width:100px;">公众号名称</th>
                             <th style="min-width:400px;">说明</th>
                             <th style="min-width:100px;">二维码</th>
-                            <th style="min-width:60px;"></th>
+                            <th style="width:170px;">类型</th>
+                            <th style="width:60px;"></th>
                             <th style="width:160px;"></th>
                         </tr>
                         <foreach name="accounts" item="row">
                             <tr>
                                 <td>
-                                    {$row['title']}
+                                    <p class="form-control-static">
+                                        {$row['title']}
+                                    </p>
                                 </td>
                                 <td>
-                                    {$row['remark']}
+                                    <p class="form-control-static">
+                                        {$row['remark']}
+                                    </p>
                                 </td>
                                 <td>
-                                    <abbr class="tips" data-title="二维码" data-html="true" data-placement="left" data-content="<img src='{$row['qr']}' width='200' >">查看</abbr>
+                                    <p class="form-control-static">
+                                        <abbr class="tips" data-title="二维码" data-html="true" data-placement="left" data-content="<img src='{$row['qr']}' width='200' >">查看</abbr>
+                                    </p>
                                 </td>
                                 <td>
-                                    <if condition="$row['isconnect'] == '1'">
-                                        <span class="label label-success">已接入</span>
-                                        <else/>
-                                        <span class="label label-warning">未接入</span>
-                                    </if>
+                                    <p class="form-control-static">
+                                        <if condition="$row['level'] == '2'">
+                                            <span class="label label-success">认证服务号</span>
+                                            <elseif condition="$row['level'] == '1'"/>
+                                            <span class="label label-info">普通服务号/认证订阅号</span>
+                                            <else/>
+                                            <span class="label label-default">普通订阅号</span>
+                                        </if>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="form-control-static">
+                                        <if condition="$row['isconnect'] == '1'">
+                                            <span class="label label-success">已接入</span>
+                                            <else/>
+                                            <span class="label label-warning">未接入</span>
+                                        </if>
+                                    </p>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">

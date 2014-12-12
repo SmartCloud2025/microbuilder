@@ -1,5 +1,6 @@
 <?php
 namespace Core\Model;
+use Core\Util\File;
 use Think\Model;
 
 class Utility extends Model {
@@ -64,6 +65,60 @@ class Utility extends Model {
             $m->table('__CORE_SETTINGS__')->add($rec, array(), true);
         }
         return true;
+    }
+
+    /**
+     * 上传文件保存，缩略图暂未实现
+     *
+     * @param string $file  上传的$_FILE字段
+     * @param string $type  上传类型（将按分类保存不同子目录，image -> images）
+     * @param string $sname 保存的文件名，如果为 auto 则自动生成文件名，否则请指定从附件目录开始的完整相对路径（包括文件名，不包括文件扩展名）
+     * @param array $extra
+     * @return array 返回结果数组，字段包括：success => bool 是否上传成功，path => 保存路径（从附件目录开始的完整相对路径）
+     */
+    public static function upload($file, $type = 'image', $sname = 'auto') {
+        if(empty($file)) {
+            return error(-1, '没有上传内容');
+        }
+        $type = in_array($type, array('image','audio')) ? $type : 'image';
+        $settings = array(
+            'image' => array(
+                'storage'       => 'images/',
+                'extentions'    => array('jpg', 'png'),
+                'limit'         => 1024,
+            )
+        );
+
+        if(!array_key_exists($type, $settings)) {
+            return error(-1, '未知的上传类型');
+        }
+        $extention = pathinfo($file['name'], PATHINFO_EXTENSION);
+        if(!in_array(strtolower($extention), $settings[$type]['extentions'])) {
+            return error(-1, '不允许上传此类文件');
+        }
+        if(!empty($settings[$type]['limit']) && $settings[$type]['limit'] * 1024 < filesize($file['tmp_name'])) {
+            return error(-1, "上传的文件超过大小限制，请上传小于 {$settings[$type]['limit']}k 的文件");
+        }
+
+        $path = MB_ROOT .'/attachment/';
+        $ret = array();
+        if($sname == 'auto') {
+            $ret['filename'] = $settings[$type]['storage'] . date('Y/m/');
+            File::mkdirs($path . $ret['filename']);
+            do {
+                $filename = util_random(30) . ".{$extention}";
+            } while(file_exists($path .$ret['filename']. $filename));
+            $ret['filename'] .= $filename;
+        } else {
+            $ret['filename'] = $settings[$type]['storage'] . $sname;
+            mkdirs(dirname($path . $ret['filename']));
+        }
+        $ret['abs'] = $path . $ret['filename'];
+        if(!File::move($file['tmp_name'], $ret['abs'])) {
+            return error(-1, '保存上传文件失败');
+        }
+        $ret['url'] = attach('attachment/' . $ret['filename']);
+        return $ret;
     }
 
     public static function sslGenKey() {

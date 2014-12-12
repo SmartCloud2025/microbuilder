@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `mb_br_bridges` (
 DOC;
 
     private $uninstallSql = <<<'DOC'
-DROP TABLE mb_br_bridges; 
+DROP TABLE IF EXISTS mb_br_bridges; 
 DOC;
 
     

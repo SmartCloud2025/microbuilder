@@ -5,18 +5,13 @@
  * @param string $vars
  * @return string
  */
-function AU($url='', $vars='') {
-    if(!defined('MODULE_NAME') || !defined('ADDON_NAME')) {
-        trigger_error('当前上下文不支持这个函数AU', E_USER_ERROR);
-    }
+function AU($url = '', $vars = '') {
     $entry = parse_name(MODULE_NAME);
-    $addon = parse_name(ADDON_NAME);
     if($entry == 'app') {
-        $url = "/extend/{$addon}/{$url}";
+        return MAU($url, $vars);
     } else {
-        $url = "/{$entry}/extend/{$addon}/{$url}";
+        return WAU($url, $vars);
     }
-    return U($url, $vars);
 }
 
 function MU() {
@@ -27,13 +22,41 @@ function WU() {
     
 }
 
-function MAU() {
+function MAU($url = '', $vars = '') {
+    if(!defined('MODULE_NAME') || !defined('ADDON_NAME')) {
+        trigger_error('当前上下文不支持这个函数AU', E_USER_ERROR);
+    }
+    $addon = parse_name(ADDON_NAME);
+    $url = "/extend/{$addon}/{$url}";
+    $url = U($url, $vars);
+    $info = pathinfo(__APP__);
+    $root = substr($info['dirname'], 0, -1) . 'm';
+    if(!empty($info['basename'])) {
+        $root .= '/' . $info['basename'];
+    }
     
+    $len = strlen(__APP__);
+    $url = substr($url, $len);
+    return $root . $url;
 }
 
-function WAU() {
-    
-    
+function WAU($url = '', $vars = '') {
+    if(!defined('MODULE_NAME') || !defined('ADDON_NAME')) {
+        trigger_error('当前上下文不支持这个函数AU', E_USER_ERROR);
+    }
+    $entry = parse_name(MODULE_NAME);
+    $addon = parse_name(ADDON_NAME);
+    $url = "/{$entry}/extend/{$addon}/{$url}";
+    $url = U($url, $vars);
+    $info = pathinfo(__APP__);
+    $root = substr($info['dirname'], 0, -1) . 'w';
+    if(!empty($info['basename'])) {
+        $root .= '/' . $info['basename'];
+    }
+
+    $len = strlen(__APP__);
+    $url = substr($url, $len);
+    return $root . $url;
 }
 
 function inputRaw($jsonDecode = true) {
@@ -48,7 +71,7 @@ function attach($path) {
     if(stripos($path, 'http://') === 0 || stripos($path, 'https://') === 0) {
         return $path;
     } else {
-        return rtrim(__SITE__, '/') . $path;
+        return __SITE__ . 'attachment/' . $path;
     }
 }
 
@@ -68,6 +91,23 @@ function coll_neaten($ds, $key) {
         $ret = array();
         foreach($ds as $row) {
             $ret[] = $row[$key];
+        }
+        return $ret;
+    }
+    return array();
+}
+
+function coll_walk($ds, $callback, $key = null) {
+    if(!empty($ds) && is_callable($callback)) {
+        $ret = array();
+        if(!empty($key)) {
+            foreach($ds as $row) {
+                $ret[] = call_user_func($callback, $row[$key]);
+            }
+        } else {
+            foreach($ds as $row) {
+                $ret[] = call_user_func($callback, $row);
+            }
         }
         return $ret;
     }
@@ -261,6 +301,30 @@ function util_curd($instance, $prefix, $dos = array()) {
         return '';
     }
     return $do;
+}
+
+/**
+ * 将一个数组转换为 XML 结构的字符串
+ *
+ * @param array $arr 要转换的数组
+ * @param int $isRoot 节点层级, 1 为 Root.
+ * @return string XML 结构的字符串
+ */
+function util_2xml($arr, $isRoot = 1) {
+    $s = $isRoot == 1 ? "<xml>" : '';
+    foreach($arr as $tagname => $value) {
+        if (is_numeric($tagname)) {
+            $tagname = $value['TagName'];
+            unset($value['TagName']);
+        }
+        if(!is_array($value)) {
+            $s .= "<{$tagname}>".(!is_numeric($value) ? '<![CDATA[' : '').$value.(!is_numeric($value) ? ']]>' : '')."</{$tagname}>";
+        } else {
+            $s .= "<{$tagname}>" . util_2xml($value, $isRoot + 1)."</{$tagname}>";
+        }
+    }
+    $s = preg_replace("/([\x01-\x08\x0b-\x0c\x0e-\x1f])+/", ' ', $s);
+    return $isRoot == 1 ? $s."</xml>" : $s;
 }
 
 /**

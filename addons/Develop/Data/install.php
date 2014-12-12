@@ -216,7 +216,10 @@ if($action == 'db') {
                 }
             }
             if(empty($error)) {
-                $query = $pdo->query("SHOW TABLES LIKE '{$db['prefix']}%';");
+                $prefix = $db['prefix'];
+                $prefix = str_replace('_', '\_', $prefix);
+                $prefix = str_replace('%', '\%', $prefix);
+                $query = $pdo->query("SHOW TABLES LIKE '{$prefix}%';");
                 $tables = $query->fetchAll();
                 if(!empty($tables)) {
                     $error = '您的数据库不为空，请重新建立数据库或是清空该数据库或更改表前缀！';
