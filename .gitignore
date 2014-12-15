@@ -1,5 +1,6 @@
 /\.idea
 
+/addons/.gitignore
 /addons/CouponCommerce/
 /addons/Logistics/
 /addons/SalesTask/

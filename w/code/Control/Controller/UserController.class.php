@@ -76,7 +76,7 @@ class UserController extends Controller {
 
     public function deleteAction($uid) {
         $uid = intval($uid);
-        $ret = $this->acl->deleteUser($uid);
+        $ret = $this->acl->removeUser($uid);
         if(is_error($ret)) {
             $this->error($ret['message']);
         } else {

@@ -93,7 +93,7 @@ class Acl extends Model {
         return error(-2, '保存用户数据失败, 请稍后重试');
     }
     
-    public function deleteUser($uid) {
+    public function removeUser($uid) {
         $uid = intval($uid);
         if($uid == '1') {
             return error(-1, '创建用户不能删除');
