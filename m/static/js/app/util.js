@@ -312,6 +312,7 @@ define(['bootstrap'], function($){
                         var val = {lng: point.lng, lat: point.lat, label: modalobj.find('.help-block').text()};
                         callback(val);
                     }
+                    modalobj.find('.input-group :text').val('');
                     modalobj.modal('hide');
                 });
                 modalobj.modal('show');

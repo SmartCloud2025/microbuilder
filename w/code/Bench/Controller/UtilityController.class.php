@@ -9,7 +9,8 @@ use Think\Controller;
 class UtilityController extends Controller {
     
     public function qrAction() {
-        $url = I('get.url');
+        $url = I('get.raw');
+        $url = base64_decode($url);
         import_third('qrcode.phpqrcode');
         \QRcode::png($url, false, QR_ECLEVEL_Q, 8);
     }
@@ -21,7 +22,6 @@ class UtilityController extends Controller {
         $type = in_array($type, array('image', 'audio')) ? $type : 'image';
         $method = 'file' . ucfirst($type) . ucfirst($do);
         
-        $option = array();
         $option = @base64_decode(I('post.options'));
         $option = @unserialize($option);
         if(empty($option)) {

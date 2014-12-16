@@ -8,5 +8,7 @@ use Core\Model\Acl;
 class AuthBehavior {
     public function run(&$params) {
         session('__:uid', 1);
+        
+        //#debug
     }
 }
