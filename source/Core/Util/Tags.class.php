@@ -24,18 +24,18 @@ class Tags extends TagLib {
                         $(".daterange").each(function(){
                             var elm = this;
                             var withTime = $(elm).attr("data-time").toLowerCase() == "true";
+                            var format = "YYYY-MM-DD";
+                            if(withTime) {
+                                format = "YYYY-MM-DD HH:mm"
+                            }
                             $(this).daterangepicker({
-                                format: "YYYY-MM-DD",
+                                format: format,
                                 startDate: $(elm).prev().prev().val(),
                                 endDate: $(elm).prev().val(),
                                 timePicker: withTime,
                                 timePickerIncrement: 1,
                                 timePicker12Hour: false
                             }, function(start, end){
-                                var format = "YYYY-MM-DD";
-                                if(withTime) {
-                                    format = "YYYY-MM-DD HH:mm"
-                                }
                                 $(elm).find(".date-title").html(start.format(format) + " 至 " + end.format(format));
                                 $(elm).prev().prev().val(start.format(format));
                                 $(elm).prev().val(end.format(format));
